@@ -1,1 +1,4 @@
-# PostbackServer
+curl "http://65.2.115.115/?SiteID=123&AD=ExampleAd&AD_ID=456&ADset=ExampleAdset&Adsetset_ID=789&AndroidDeviceID=device123&AppID=app456&AppName=ExampleApp&AppVersion=1.0.0&AppsFlyerID=flyer789&AttStatus=1&Att-0-1=0&AttributedTouchType=type1&BlockedReason=reason&BlockedReasonValue=value&BlockedSubReason=subreason&BundleId=bundle123&Campaign=ExampleCampaign&CampaignID=campaign456&CountryCode=US&CustomeruserID=user789&DownloadTime=2023-07-08T12:00:00Z&EventTrueRevenue=10.0&EventTrueRevenueUSD=10.0&IDFV=idfv123&IOSDeviceID=iosdevice456&InstallTime=2023-07-08T12:00:00Z&isLAT=0&IsPrimaryAttribution=1&isRejected=0&IsRetargeting=0&Language=en&OAID=oaid123&Platform=iOS&PostbackID=postback456&RetargetingConversionType=type2&SubSiteID=subsite789&ClickID=click123&CostCurrency=USD&CostModel=cpm&CostValue=2.0"
+
+
+curl -X GET "http://65.2.115.115/postbacks/"

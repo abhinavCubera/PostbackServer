@@ -1,8 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, get_db, Base
 from models import Postback
 from schemas import Postback as PostbackSchema, PostbackCreate
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from typing import List, Dict
 import logging
 import hashlib
@@ -19,6 +22,10 @@ Base.metadata.create_all(bind=engine)
 def generate_hash(data: Dict) -> str:
     data_string = str(data)
     return hashlib.sha256(data_string.encode()).hexdigest()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=400, content={"message": "Validation error", "detail": exc.errors()})
 
 @app.get("/")
 async def postback(
@@ -108,14 +115,26 @@ async def postback(
         'CostModel': CostModel,
         'CostValue': CostValue
     }
+    
     hash_id = generate_hash(params)
     # db = get_db()
     data = {key: value for key, value in params.items() if value is not None}
     postback_data = Postback(hash_id=hash_id, data=data)
-    db.add(postback_data)
-    db.commit()
-    db.refresh(postback_data)
+    try:
+        db.add(postback_data)
+        db.commit()
+        db.refresh(postback_data)
+    except IntegrityError:
+        db.rollback()
+        existing_postback = db.query(Postback).filter(Postback.hash_id == hash_id).first()
+        if existing_postback:
+            return existing_postback
+        else:
+            raise HTTPException(status_code=500, detail="Unknown error occurred")
     return postback_data
+
+        
+    
 
 @app.get("/postbacks/", response_model=List[PostbackSchema])
 def read_postbacks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
